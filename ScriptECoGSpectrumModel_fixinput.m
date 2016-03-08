@@ -41,15 +41,15 @@ clear all
 % timesteps, and total time
 srate=10000; %sampling rate 
 dt=1/srate; %timestep value
-t_tot=10; %total time (units of seconds) - move to 5 mins at end
+t_tot=10; %total time (units of seconds)
 
-nr_sims = 2; % simulation with two sets of parameters
+nr_sims = 4; % simulation with two sets of parameters
 
 % synaptic stuff, timescale, max firing rate, before modulation
-tau_set=[1/(2*pi*75) 1/(2*pi*40)]; %synaptic decay timescale (units seconds)
-alp_set=[1/.05 1/.2]; % 1/"relaxation time" of broadband across membrane - leakage timescale - units (1/s) - the bullshit part of the model is that this is done prior to the influence of the rhythm
+tau_set=[1/(2*pi*75) 1/(2*pi*75) 1/(2*pi*40) 1/(2*pi*40)]; %synaptic decay timescale (units seconds)
+alp_set=[1/.05 1/.2 1/.05 1/.2]; % 1/"relaxation time" of broadband across membrane - leakage timescale - units (1/s) - the bullshit part of the model is that this is done prior to the influence of the rhythm
 frate=10; %maximum pre-synaptic firing rate (spikes/second) - this isn't appropriately normalized below yet
-plot_colors = {'r','b'};
+plot_colors = {'r','m','c','b'};
 
 % number of elements in simulation
 num_neurons=6; % number of neurons in simulation
@@ -124,7 +124,7 @@ for s = 1:nr_sims
 end
 
 
-%% make the figure:
+%% make the figure with 4 simulations:
 
 figure('Position',[0 0 200 700])
 subplot(3,1,1),hold on
@@ -165,7 +165,48 @@ xlim([0 20])
 
 set(gcf,'PaperPositionMode','auto')
 print('-dpng','-r300',['./figures/MillerModel_Spectra'])
-% print('-depsc','-r300',['./figures/MillerModel_Spectra'])
+print('-depsc','-r300',['./figures/MillerModel_Spectra'])
 
+%% make the figure with 2 simulations for the Journal Club
 
-    
+figure('Position',[0 0 200 700])
+subplot(3,1,1),hold on
+for s = [1 4]%1:nr_sims
+    spect_plot = spectra_data(:,s);
+    plot(f,spect_plot,'Color',plot_colors{s})
+end
+set(gca, 'XScale', 'log', 'YScale', 'log')
+set(gca, 'XTick',[1 10 100])
+title('loglog')
+
+% set a line at the knees
+for s = [1 4]%1:nr_sims
+    f_tau = 1/(2*pi*tau_set(s));
+    f_alp = 1/(2*pi*alp_set(s));
+    plot([f_tau f_tau],[spect_plot(1) spect_plot(300)],':','Color',plot_colors{s})
+    plot([f_alp f_alp],[spect_plot(1) spect_plot(300)],':','Color',plot_colors{s})
+end
+xlim([1 300])
+
+subplot(3,1,2),hold on
+for s = [1 4]%1:nr_sims
+    spect_plot = spectra_data(:,s);
+    plot(f,spect_plot,'Color',plot_colors{s})
+end
+set(gca, 'YScale', 'log')
+title('semilog')
+xlim([0 300])
+set(gca,'XTick',[0 20 50:50:300])
+subplot(3,1,3),hold on
+for s = [1 4]%1:nr_sims
+    spect_plot = spectra_data(:,s);
+    plot(f,spect_plot,'Color',plot_colors{s})
+end
+set(gca, 'YScale', 'log')
+title('semilog')
+xlim([0 20])
+
+set(gcf,'PaperPositionMode','auto')
+print('-dpng','-r300',['./figures/MillerModel_Spectra_JC'])
+print('-depsc','-r300',['./figures/MillerModel_Spectra_JC'])
+
