@@ -174,10 +174,21 @@ subplot(3,1,1),hold on
 for s = [1 4]%1:nr_sims
     spect_plot = spectra_data(:,s);
     plot(f,spect_plot,'Color',plot_colors{s})
+
+    idx =  f>100 & f<400;
+    x = log(f(idx));
+    y = log(spect_plot(idx));
+    mdl = fitlm(x, y);    
+    pwr = mdl.Coefficients.Estimate(2);
+    disp(pwr)
+
 end
 set(gca, 'XScale', 'log', 'YScale', 'log')
 set(gca, 'XTick',[1 10 100])
 title('loglog')
+
+
+
 
 % set a line at the knees
 for s = [1 4]%1:nr_sims
